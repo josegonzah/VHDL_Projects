@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2017.2 (64-bit)
+# SW Build 1909853 on Thu Jun 15 18:39:10 MDT 2017
+# IP Build 1909766 on Thu Jun 15 19:58:00 MDT 2017
+# Start of session at: Thu Nov  9 15:47:51 2017
+# Process ID: 10894
+# Current directory: /home/josegonzalez1998/practica5/practica5.runs/impl_1
+# Command line: vivado -log PS2Receiver.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source PS2Receiver.tcl -notrace
+# Log file: /home/josegonzalez1998/practica5/practica5.runs/impl_1/PS2Receiver.vdi
+# Journal file: /home/josegonzalez1998/practica5/practica5.runs/impl_1/vivado.jou
+#-----------------------------------------------------------
+source PS2Receiver.tcl -notrace

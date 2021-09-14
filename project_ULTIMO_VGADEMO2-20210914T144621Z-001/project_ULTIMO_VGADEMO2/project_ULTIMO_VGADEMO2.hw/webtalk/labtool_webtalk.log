@@ -1,0 +1,9 @@
+
+****** Webtalk v2016.4 (64-bit)
+  **** SW Build 1733598 on Wed Dec 14 22:35:42 MST 2016
+  **** IP Build 1731160 on Wed Dec 14 23:47:21 MST 2016
+    ** Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
+
+source /home/arley/project_ULTIMO_VGADEMO2/project_ULTIMO_VGADEMO2.hw/webtalk/labtool_webtalk.tcl -notrace
+webtalk_transmit: Time (s): cpu = 00:00:00.23 ; elapsed = 00:00:06 . Memory (MB): peak = 220.676 ; gain = 0.000 ; free physical = 883 ; free virtual = 2543
+INFO: [Common 17-206] Exiting Webtalk at Mon Mar 20 21:45:20 2017...
