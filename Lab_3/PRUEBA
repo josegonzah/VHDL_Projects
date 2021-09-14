@@ -1,0 +1,270 @@
+        .ORIG    x3000
+START   ;R0:almacenamos el caracter ingresado
+	;R1 almacenamos el digito ingresado(normalizado)
+	;R2: cantidad de digitos(6 o 2)
+	;R3: resgistro temporal
+	;R4: almacenamos el numero completo
+	;R5,R6 Registros temporales
+	AND R2,R2,#0
+	;ADD R2,R2,#2 
+	AND R4,R4,#0 
+	AND R5,R5,#0
+	;ADD R5,R5,#1
+	ST R5,BANDERA
+	LEA      R0,MSG_N
+        PUTS                    ;; Prints the null-terminated string
+
+;----------------------capturar el dato-----------------------------
+RECIBIR 	GETC              
+		JSR NORMALIZAR	
+;----------------------numeros-------------------------------------
+		ADD R1,R1,#-9
+		BRZ DIRECCION
+		ADD R1,R1,#9
+		ADD R1,R1,#-8
+		BRZ DIRECCION
+		ADD R1,R1,#8
+		ADD R1,R1,#-7
+		BRZ DIRECCION
+		ADD R1,R1,#7
+		ADD R1,R1,#-6
+		BRZ DIRECCION
+		ADD R1,R1,#6
+		ADD R1,R1,#-5
+		BRZ DIRECCION
+		ADD R1,R1,#5
+		ADD R1,R1,#-4
+		BRZ DIRECCION
+		ADD R1,R1,#4
+		ADD R1,R1,#-3
+		BRZ DIRECCION
+		ADD R1,R1,#3
+		ADD R1,R1,#-2
+		BRZ DIRECCION
+		ADD R1,R1,#2
+		ADD R1,R1,#-1
+		BRZ DIRECCION
+		ADD R1,R1,#1
+		ADD R1,R1,#-0
+		BRZ DIRECCION
+		ADD R1,R1,#3 ;Verificamos si es el signo(-)
+		BRZ DIRECCION
+		ADD R1,R0,#-10
+		BRZ DIRECCION ;Verificamos si es un enter 
+		BRNP RECIBIR;
+;-----------------------------------DIRECCIONAMIENTO----------------------
+DIRECCION	LD R3,BANDERA
+		ADD R3,R3,#0
+		BRP DATOS ; Verificamos si esta capturando el numero N o los datos 
+		OUT 
+		ADD R1,R0,#-10	
+		BRZ SALTO_DATOS;Verificamos si ingreso un enter
+		ADD R2,R2,#1
+		ADD R3,R2,#0
+		ADD R3,R3,#-2
+		BRZ ALMACENAR_NUM;Verificamos si ingreso dos digitos-------------???????????????
+		JSR MULT_10; R4<-Mantenemos el digito ingresado
+		BRNZP RECIBIR
+
+;------------------PASSAR A OTRO ESTADO---TENER EN CUENTA,REINICIAR LOS REGISTROS R2,R4--------
+ALMACENAR_NUM	JSR MULT_10		
+SALTO_DATOS	ADD R3,R4,-2
+		BRN ERROR ;Si el nimero es menor que 10
+		ADD R3,R4,-5
+		;ADD R3,R3,-5
+		BRP ERROR;Si el numero es mayor que 20
+		JSR ESPACIO
+		JSR ENTER
+		LEA R0, MSG_DA;------------------------------>>Mostramos mensaje Mensaje
+		PUTS
+		ST R4,NUM_DATOS
+		ST R4,N	
+		AND R2,R2,#0
+		AND R4,R4,#0	
+		AND R0,R0,#0 ;-|----Reiniciamos los registros
+		ADD R0,R0,#1
+		ST R0,BANDERA
+		BRNZP RECIBIR			
+			
+;-------------------------MOSTRAR DATOS-------------------------
+
+SHOW		OUT 
+		JSR MULT_10; Acumulamos el digito en R4	
+		ADD R3,R2,#-5
+		BRZ GUARDAR
+		ADD R2,R2,#1
+		BRNZP RECIBIR
+;------------------------------------multiplicacion----------------------------------						
+MULT_10   	ADD R3,R4,R4  ; R3 ==  2*R4
+        	ADD R3,R3,R3  ; R3 ==  4*R4
+        	ADD R3,R3,R4  ; R3 ==  5*R4
+        	ADD R3,R3,R3  ; R3 == 10*R4
+		ADD R6,R7,#0
+		JSR NORMALIZAR
+		ADD R4,R3,R1  ; sumamos el digito ingresado
+		ADD R7,R6,#0
+		RET
+	
+;--------------------------------NORMALIZAMOS EL DATO-----------------------
+NORMALIZAR      AND R1,R1,#0 ;Normalizamos el numero restando 48=>0
+		ADD R1,R1,R0
+		ADD R1,R1,#-15
+		ADD R1,R1,#-15
+		ADD R1,R1,#-15
+		ADD R1,R1,#-3 ;
+		RET
+;--------------------------SIGNO------------------------------
+SIGNO		ADD R2,R2,#0
+		BRP RECIBIR; Verificamos si estan el la pocision(0)
+		OUT
+		AND R5,R5,#0
+		ADD R5,R5,#1
+		ST R5,SIG
+		ADD R2,R2,#1; pasamos a capturar el primer digito
+		BRNZP RECIBIR
+
+;---------------------CONTRL DE CANTIDAD DE DATOS----------------
+DATOS		ADD R3,R0,#-10
+		BRZ IN_ENTER; Verificamos si es un enter
+		JSR NORMALIZAR 
+		ADD R3,R1,#3
+		BRZ SIGNO; Verificamos is es un signo
+		ADD R2,R2,#0
+		BRP SHOW
+		JSR MULT_10;--A R4 Le acumulamos el digito
+		OUT
+		ADD R2,R2,#2; Salto dos digitos ya en la posicion (0) no se ingreso el (-)
+		BRNZP RECIBIR
+		
+;---------------NUEVO DATO-----------REINICIAMOS LOS REGISTROS PARA UN NUEVO DATO--------
+NEX_DATA	AND R2,R2,#0 ;cantidad de digitos de los datos del nuevo dato
+		AND R4,R4,#0 
+		ST R4,SIG
+		JSR ESPACIO		
+		LD R3,NUM_DATOS
+		ADD R3,R3,#-1
+		ST R3,NUM_DATOS		
+		BRP RECIBIR ;SE VERIFICA SI TERMINA DE INGREAR LOS N DATOS
+		ST R4,CONTADOR
+		JSR ENTER
+		LEA R0,MSG_END
+		PUTS
+		BRNZP ORDENAMIENTO
+		;JSR TERMINAR;----------------------CONECTAR CODIGO COMPAÑERO		
+;-----------------------------------PARTICIONAMOS EL NUMERO SI INGRESA UN ENTER-------------------------
+IN_ENTER	ADD R3,R2,#0;
+		BRZ RECIBIR  ;Verificamos si NO ingreso datos
+		ADD R3,R2,#-1
+		BRZ RECIBIR  ;Verificamos si se ingreso un signo segido de un enter 
+		LD R0,SIG
+		BRNZ GUARDAR;Verificamos is es positivo o no
+		NOT R4,R4
+		ADD R4,R4,#1	
+GUARDAR 	LEA R3,DIR
+		LD R1,CONTADOR
+		ADD R5,R3,R1
+		STR R4,R5,#0; Almacenamos
+		ADD R1,R1,#1
+		ST R1,CONTADOR
+		BRNZP NEX_DATA
+
+ORDENAMIENTO    AND R1,R1,#0;
+		ADD R1,R1,#1;CONTADOR PRIMER CICLO
+LOOP1		LD R0,N
+		NOT R0,R0
+		ADD R0,R0,#1
+	        ADD R3,R1,R0;RESTAMOS N
+		BRZ FINISH
+		;---LOOP2
+		AND R2,R2,#0; CONTADOR SEGUNDO CICLO
+		LOOP2 	LD R0,N
+			ADD R7,R1,#0
+			NOT R7,R7
+			ADD R7,R7,#1
+			ADD R0,R0,R7
+			ADD R4,R2,#0
+			NOT R4,R4
+			ADD R4,R4,#1;
+			ADD R4,R4,R0
+			BRZ AUMENTAR
+
+			LEA R4,DIR
+			ADD R4,R4,R2
+			LDR R5,R4,#0
+;----------------------------------------------
+			BRP VER_P
+			BRN VER_N
+			LDR R6,R4,#1
+			ADD R7,R5,R6
+			BRN CAMBIAR1
+			ADD R2,R2,#1
+			BRNZP LOOP2			
+			
+		CAMBIAR1 	STR R6,R4,#0
+				STR R5,R4,#1
+				ADD R2,R2,#1
+				BRNZP LOOP2
+
+		VER_P   LDR R6,R4,#1
+			BRP CASO1
+			BRNZP CAMBIAR1
+
+
+		VER_N   LDR R6,R4,#1
+			BRN CASO1
+			;NO HAY QUE CAMBIAR 
+			ADD R2,R2,#1
+			BRNZP LOOP2
+
+		CASO1   ADD R7,R6,#0
+			NOT R7,R7
+			ADD R7,R7,#1
+			ADD R0,R5,R7
+			BRP CAMBIAR1
+			ADD R2,R2,#1
+			BRNZP LOOP2
+
+		AUMENTAR	ADD R1,R1,#1
+				BRNZP LOOP1
+
+			
+	FINISH	HALT 
+
+ESPACIO		AND R0,R0,#0
+		ADD R0,R0,#15
+		ADD R0,R0,#15
+		ADD R0,R0,#2
+		ADD R6,R7,#0
+		OUT 
+		ADD R7,R6,#0
+		RET
+ENTER		AND R0,R0,#0
+		ADD R0,R0,#13
+		ADD R6,R7,#0
+		OUT 
+		ADD R7,R6,#0
+		RET		
+TERMINAR	HALT
+BANDERA 	.FILL X0000
+NUM_DATOS	.FILL X0000
+N		.FILL #0
+DIR		.BLKW #20; Direccion para almacenar los datos
+CONTADOR	.FILL #0
+AUX1		.FILL #0 ;
+
+SIG   		.FILL x0000
+ERROR   	JSR ENTER
+		LEA R0,MSG_E
+		PUTS
+		JSR ENTER
+		BRNZP START
+		
+;-----------------------MENSAJES O MENU--------------------------------------
+MSG_N   	 .STRINGZ "Ingrese el numero ENTERO entre 10 y 20: "   
+       
+MSG_DA    	.STRINGZ "Ingrese los Datos: "   
+
+MSG_END		.STRINGZ "LOS DATOS FUERON ALMACENADOS "
+   
+MSG_E    	.STRINGZ "Ingresó UN NUMERO INCORRECTO "   
+        .END
